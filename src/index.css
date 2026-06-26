@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --pink: #FF0099;
+  --lime: #BFFF00;
+  --onyx: #0A0A0A;
+  --surface: #111111;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--onyx);
+}
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background-color: var(--onyx);
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-x: none;
+}
+
+/* Frame animation canvas */
+.frame-crisp {
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Neon glow text utility */
+.glow-pink {
+  text-shadow: 0 0 10px #FF0099, 0 0 30px #FF0099, 0 0 60px rgba(255, 0, 153, 0.5);
+}
+
+.glow-lime {
+  text-shadow: 0 0 10px #BFFF00, 0 0 30px #BFFF00;
+}
+
+/* Marquee track */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 22s linear infinite;
+}
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Diagonal stripe background */
+.stripe-bg {
+  background-image: repeating-linear-gradient(
+    45deg,
+    #111 0px, #111 10px,
+    #0A0A0A 10px, #0A0A0A 20px
+  );
+}
+
+/* Liquid clip-path reveal */
+.liquid-reveal {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+}
+.liquid-reveal.revealed {
+  clip-path: inset(0 0% 0 0);
+}
+
+/* Neon border glow on focus */
+.neon-focus:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #BFFF00, 0 0 16px rgba(191, 255, 0, 0.4);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #0A0A0A; }
+::-webkit-scrollbar-thumb { background: #FF0099; border-radius: 2px; }
+
+/* Section anchor offset for fixed nav */
+section[id] {
+  scroll-margin-top: 80px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .marquee-track {
+    animation: none;
+  }
+}
