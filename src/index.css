@@ -5,8 +5,8 @@
 :root {
   --pink: #FF0099;
   --lime: #BFFF00;
-  --onyx: #0A0A0A;
-  --surface: #111111;
+  --onyx: #0D0A14;
+  --surface: #18131F;
 }
 
 *, *::before, *::after {
@@ -15,12 +15,12 @@
 
 html {
   scroll-behavior: smooth;
-  background-color: var(--onyx);
+  background-color: #0D0A14;
 }
 
 body {
   font-family: 'Space Grotesk', sans-serif;
-  background-color: var(--onyx);
+  background-color: #0D0A14;
   color: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -60,8 +60,8 @@ body {
 .stripe-bg {
   background-image: repeating-linear-gradient(
     45deg,
-    #111 0px, #111 10px,
-    #0A0A0A 10px, #0A0A0A 20px
+    #18131F 0px, #18131F 10px,
+    #0D0A14 10px, #0D0A14 20px
   );
 }
 

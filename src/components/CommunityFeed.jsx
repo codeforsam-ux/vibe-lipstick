@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Heart, MessageCircle } from 'lucide-react'
 
@@ -9,7 +10,7 @@ const UGC_POSTS = [
     likes: 8421,
     comments: 312,
     aspect: 'aspect-[3/4]',
-    gradient: 'linear-gradient(135deg, #FF0099 0%, #7700aa 100%)',
+    img: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=540&q=80&fit=crop&auto=format',
     accent: '#FF0099',
   },
   {
@@ -19,7 +20,7 @@ const UGC_POSTS = [
     likes: 5632,
     comments: 201,
     aspect: 'aspect-square',
-    gradient: 'linear-gradient(145deg, #FF66CC 0%, #cc0066 100%)',
+    img: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=400&q=80&fit=crop&auto=format',
     accent: '#FF66CC',
   },
   {
@@ -29,7 +30,7 @@ const UGC_POSTS = [
     likes: 12089,
     comments: 447,
     aspect: 'aspect-[3/4]',
-    gradient: 'linear-gradient(135deg, #6600CC 0%, #220044 100%)',
+    img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=540&q=80&fit=crop&auto=format',
     accent: '#9933ff',
   },
   {
@@ -39,7 +40,7 @@ const UGC_POSTS = [
     likes: 3891,
     comments: 98,
     aspect: 'aspect-[4/3]',
-    gradient: 'linear-gradient(135deg, #BFFF00 0%, #66AA00 100%)',
+    img: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&h=300&q=80&fit=crop&auto=format',
     accent: '#BFFF00',
   },
   {
@@ -49,7 +50,7 @@ const UGC_POSTS = [
     likes: 7203,
     comments: 255,
     aspect: 'aspect-square',
-    gradient: 'linear-gradient(145deg, #FF5500 0%, #CC2200 100%)',
+    img: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&q=80&fit=crop&auto=format',
     accent: '#FF5500',
   },
   {
@@ -59,8 +60,8 @@ const UGC_POSTS = [
     likes: 9874,
     comments: 389,
     aspect: 'aspect-[3/4]',
-    gradient: 'linear-gradient(135deg, #2d2d5e 0%, #0a0a1a 100%)',
-    accent: '#4444aa',
+    img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=540&q=80&fit=crop&auto=format',
+    accent: '#8855ff',
   },
   {
     id: 7,
@@ -69,7 +70,7 @@ const UGC_POSTS = [
     likes: 6211,
     comments: 178,
     aspect: 'aspect-[4/3]',
-    gradient: 'linear-gradient(135deg, #FF0099 0%, #550033 100%)',
+    img: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=400&h=300&q=80&fit=crop&auto=format',
     accent: '#FF0099',
   },
   {
@@ -79,8 +80,8 @@ const UGC_POSTS = [
     likes: 4456,
     comments: 133,
     aspect: 'aspect-square',
-    gradient: 'linear-gradient(145deg, #ff99dd 0%, #FF0099 100%)',
-    accent: '#ff99dd',
+    img: 'https://images.unsplash.com/photo-1513519245088-0e12902e35a6?w=400&h=400&q=80&fit=crop&auto=format',
+    accent: '#FF66CC',
   },
   {
     id: 9,
@@ -89,7 +90,7 @@ const UGC_POSTS = [
     likes: 11320,
     comments: 521,
     aspect: 'aspect-[3/4]',
-    gradient: 'linear-gradient(135deg, #aa44ff 0%, #330066 100%)',
+    img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=540&q=80&fit=crop&auto=format',
     accent: '#aa44ff',
   },
 ]
@@ -99,6 +100,18 @@ function formatNum(n) {
 }
 
 function UGCCard({ post, index }) {
+  const [imgError, setImgError] = useState(false)
+
+  const fallbackGradients = {
+    '#FF0099': 'linear-gradient(135deg, #FF0099 0%, #7700aa 100%)',
+    '#FF66CC': 'linear-gradient(145deg, #FF66CC 0%, #cc0066 100%)',
+    '#9933ff': 'linear-gradient(135deg, #6600CC 0%, #220044 100%)',
+    '#BFFF00': 'linear-gradient(135deg, #BFFF00 0%, #66AA00 100%)',
+    '#FF5500': 'linear-gradient(145deg, #FF5500 0%, #CC2200 100%)',
+    '#8855ff': 'linear-gradient(135deg, #6600CC 0%, #220044 100%)',
+    '#aa44ff': 'linear-gradient(135deg, #aa44ff 0%, #330066 100%)',
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -111,36 +124,39 @@ function UGCCard({ post, index }) {
         className="relative rounded-2xl overflow-hidden border border-white/5
           hover:border-[#FF0099]/50 transition-all duration-300"
       >
-        {/* Placeholder "photo" */}
-        <div className={`relative ${post.aspect} overflow-hidden`}>
-          <div
-            className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
-            style={{ background: post.gradient }}
-          />
-
-          {/* Decorative circles simulating face/content */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div
-              className="w-20 h-20 rounded-full opacity-30"
-              style={{ background: 'rgba(255,255,255,0.3)', backdropFilter: 'blur(4px)' }}
+        {/* Photo area */}
+        <div className={`relative ${post.aspect} overflow-hidden bg-[#18131F]`}>
+          {!imgError ? (
+            <img
+              src={post.img}
+              alt={`${post.handle} wearing ${post.shade}`}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              onError={() => setImgError(true)}
             />
-          </div>
+          ) : (
+            <div
+              className="absolute inset-0"
+              style={{ background: fallbackGradients[post.accent] || fallbackGradients['#FF0099'] }}
+            />
+          )}
+
+          {/* Subtle dark vignette at bottom */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0D0A14]/70 via-transparent to-transparent pointer-events-none" />
 
           {/* Shade label chip */}
           <div
-            className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-body font-bold"
+            className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-body font-bold backdrop-blur-sm"
             style={{
               background: `${post.accent}22`,
               color: post.accent,
-              border: `1px solid ${post.accent}44`,
-              backdropFilter: 'blur(8px)',
+              border: `1px solid ${post.accent}55`,
             }}
           >
             {post.shade}
           </div>
 
           {/* Hover overlay */}
-          <div className="absolute inset-0 bg-onyx/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300
+          <div className="absolute inset-0 bg-[#0D0A14]/65 opacity-0 group-hover:opacity-100 transition-opacity duration-300
             flex flex-col items-center justify-center gap-4">
             <div className="flex items-center gap-6">
               <span className="flex items-center gap-1.5 font-body font-semibold text-white text-sm">
@@ -156,7 +172,7 @@ function UGCCard({ post, index }) {
         </div>
 
         {/* Card footer */}
-        <div className="bg-[#111] px-4 py-3 flex items-center justify-between">
+        <div className="bg-[#18131F] px-4 py-3 flex items-center justify-between">
           <span className="font-body text-sm font-medium text-white/70">{post.handle}</span>
           <div className="flex items-center gap-1 text-white/40">
             <Heart size={13} />
@@ -203,10 +219,7 @@ export default function CommunityFeed() {
         </motion.div>
 
         {/* Masonry grid */}
-        <div
-          className="columns-2 md:columns-3 lg:columns-4 gap-5"
-          style={{ columnGap: '20px' }}
-        >
+        <div className="columns-2 md:columns-3 lg:columns-4" style={{ columnGap: '20px' }}>
           {UGC_POSTS.map((post, i) => (
             <UGCCard key={post.id} post={post} index={i} />
           ))}

@@ -8,7 +8,7 @@ import DropAlert from './components/DropAlert'
 function Footer() {
   return (
     <footer
-      className="bg-[#0A0A0A] border-t border-white/5 py-12"
+      className="bg-[#0D0A14] border-t border-white/5 py-12"
       style={{ paddingBottom: 'calc(3rem + env(safe-area-inset-bottom, 0px))' }}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-10">

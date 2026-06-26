@@ -11,9 +11,9 @@ export default {
           cyber: '#BFFF00',
         },
         onyx: {
-          DEFAULT: '#0A0A0A',
-          surface: '#111111',
-          mid: '#1A1A1A',
+          DEFAULT: '#0D0A14',
+          surface: '#18131F',
+          mid: '#221C2E',
         },
       },
       fontFamily: {

@@ -134,7 +134,7 @@ export default function DropAlert() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 aria-label="Email address for drop alerts"
-                className="neon-focus w-full px-5 py-4 rounded-2xl bg-[#0A0A0A] text-white
+                className="neon-focus w-full px-5 py-4 rounded-2xl bg-[#0D0A14] text-white
                   font-body text-sm placeholder:text-white/30
                   border border-white/10 hover:border-white/20 transition-colors duration-200
                   outline-none"

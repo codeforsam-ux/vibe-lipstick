@@ -8,7 +8,8 @@ const SHADES = [
     name: 'Cyber Crush',
     price: '₹899',
     hex: '#FF0099',
-    gradient: 'radial-gradient(ellipse at 30% 30%, #FF3AB0, #CC007A)',
+    img: 'https://images.unsplash.com/photo-1586495777744-4e6232bf2263?w=560&h=420&q=80&fit=crop&auto=format',
+    tint: 'rgba(255,0,153,0.25)',
     tones: {
       light: 'linear-gradient(135deg, #f5cba7, #f0a080)',
       medium: 'linear-gradient(135deg, #c68642, #a0522d)',
@@ -22,7 +23,8 @@ const SHADES = [
     name: 'Acid Bloom',
     price: '₹899',
     hex: '#BFFF00',
-    gradient: 'radial-gradient(ellipse at 30% 30%, #d4ff33, #8fcc00)',
+    img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=560&h=420&q=80&fit=crop&auto=format',
+    tint: 'rgba(191,255,0,0.20)',
     tones: {
       light: 'linear-gradient(135deg, #f5cba7, #f0a080)',
       medium: 'linear-gradient(135deg, #c68642, #a0522d)',
@@ -35,8 +37,9 @@ const SHADES = [
     id: 3,
     name: 'Onyx Velvet',
     price: '₹949',
-    hex: '#1A1A2E',
-    gradient: 'radial-gradient(ellipse at 30% 30%, #2d2d5e, #0a0a1a)',
+    hex: '#6666cc',
+    img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=560&h=420&q=80&fit=crop&auto=format',
+    tint: 'rgba(80,40,120,0.30)',
     tones: {
       light: 'linear-gradient(135deg, #f5cba7, #f0a080)',
       medium: 'linear-gradient(135deg, #c68642, #a0522d)',
@@ -50,7 +53,8 @@ const SHADES = [
     name: 'Solar Flare',
     price: '₹849',
     hex: '#FF5500',
-    gradient: 'radial-gradient(ellipse at 30% 30%, #ff7733, #cc3300)',
+    img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=560&h=420&q=80&fit=crop&auto=format',
+    tint: 'rgba(255,85,0,0.22)',
     tones: {
       light: 'linear-gradient(135deg, #f5cba7, #f0a080)',
       medium: 'linear-gradient(135deg, #c68642, #a0522d)',
@@ -64,7 +68,8 @@ const SHADES = [
     name: 'Glitch Pink',
     price: '₹899',
     hex: '#FF66CC',
-    gradient: 'radial-gradient(ellipse at 30% 30%, #ff99dd, #ff33aa)',
+    img: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=560&h=420&q=80&fit=crop&auto=format',
+    tint: 'rgba(255,102,204,0.22)',
     tones: {
       light: 'linear-gradient(135deg, #f5cba7, #f0a080)',
       medium: 'linear-gradient(135deg, #c68642, #a0522d)',
@@ -77,8 +82,9 @@ const SHADES = [
     id: 6,
     name: 'Void Plum',
     price: '₹949',
-    hex: '#6600CC',
-    gradient: 'radial-gradient(ellipse at 30% 30%, #9933ff, #440099)',
+    hex: '#9933ff',
+    img: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=560&h=420&q=80&fit=crop&auto=format',
+    tint: 'rgba(100,0,180,0.28)',
     tones: {
       light: 'linear-gradient(135deg, #f5cba7, #f0a080)',
       medium: 'linear-gradient(135deg, #c68642, #a0522d)',
@@ -93,6 +99,7 @@ const TONE_LABELS = { light: 'Fair', medium: 'Medium', deep: 'Deep' }
 
 function ShadeCard({ shade }) {
   const [hoveredTone, setHoveredTone] = useState(null)
+  const [imgError, setImgError] = useState(false)
   const [added, setAdded] = useState(false)
 
   const handleAdd = () => {
@@ -102,36 +109,59 @@ function ShadeCard({ shade }) {
 
   return (
     <div
-      className="relative flex-shrink-0 w-[260px] md:w-[280px] bg-[#111] rounded-2xl overflow-hidden
+      className="relative flex-shrink-0 w-[260px] md:w-[280px] bg-[#18131F] rounded-2xl overflow-hidden
         border border-white/5 hover:border-[#FF0099]/40 transition-all duration-300 cursor-pointer group"
     >
       {/* Swatch zone */}
       <div className="relative h-52 overflow-hidden">
-        {/* Base gradient */}
+        {/* Product image */}
+        {!imgError ? (
+          <img
+            src={shade.img}
+            alt={`${shade.name} lipstick`}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-600 group-hover:scale-105"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          /* Gradient fallback */
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `radial-gradient(ellipse at 35% 35%, ${shade.hex}, ${shade.hex}55)`,
+            }}
+          />
+        )}
+
+        {/* Shade tint overlay */}
         <div
-          className="absolute inset-0 transition-all duration-500"
-          style={{ background: shade.gradient }}
+          className="absolute inset-0 transition-opacity duration-300"
+          style={{ background: shade.tint, mixBlendMode: 'multiply' }}
         />
 
-        {/* Liquid reveal: skin tone layer */}
+        {/* Skin-tone liquid reveal overlay */}
         <div
           className={`absolute inset-0 liquid-reveal ${hoveredTone ? 'revealed' : ''}`}
-          style={{ background: hoveredTone ? shade.tones[hoveredTone] : 'transparent' }}
+          style={{ background: hoveredTone ? shade.tones[hoveredTone] : 'transparent', opacity: 0.7 }}
         />
 
-        {/* Lipstick bullet SVG-style shape overlay */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
-          <div
-            className="w-10 h-28 rounded-t-[40%] shadow-2xl"
-            style={{ background: shade.gradient, boxShadow: `0 0 30px ${shade.hex}80` }}
+        {/* Shade colour chip — top left */}
+        <div
+          className="absolute top-3 left-3 flex items-center gap-2 px-2.5 py-1 rounded-full backdrop-blur-sm"
+          style={{ background: 'rgba(13,10,20,0.7)', border: `1px solid ${shade.hex}55` }}
+        >
+          <span
+            className="w-3 h-3 rounded-full flex-shrink-0"
+            style={{ background: shade.hex }}
           />
-          <div className="w-14 h-6 bg-[#111] rounded-t-lg" />
+          <span className="font-body text-xs font-semibold text-white/80 leading-none">
+            {shade.name}
+          </span>
         </div>
 
         {/* Glow ring on hover */}
         <div
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-t-2xl"
-          style={{ boxShadow: `inset 0 0 40px ${shade.hex}40` }}
+          style={{ boxShadow: `inset 0 0 40px ${shade.hex}30` }}
         />
       </div>
 
@@ -184,7 +214,7 @@ function ShadeCard({ shade }) {
           className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-body font-bold text-sm tracking-wide
             transition-all duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BFFF00]
             ${added
-              ? 'bg-[#BFFF00] text-[#0A0A0A]'
+              ? 'bg-[#BFFF00] text-[#0D0A14]'
               : 'bg-[#FF0099]/10 text-[#FF0099] border border-[#FF0099]/30 hover:bg-[#FF0099] hover:text-white'
             }`}
         >
@@ -198,13 +228,11 @@ function ShadeCard({ shade }) {
 
 export default function TintLab() {
   const trackRef = useRef(null)
-  const isDragging = useRef(false)
   const autoScroll = useRef(true)
 
   useAnimationFrame(() => {
-    if (!trackRef.current || isDragging.current || !autoScroll.current) return
+    if (!trackRef.current || !autoScroll.current) return
     trackRef.current.scrollLeft += 0.5
-    // Reset loop
     if (
       trackRef.current.scrollLeft >=
       trackRef.current.scrollWidth - trackRef.current.clientWidth - 2
@@ -242,7 +270,7 @@ export default function TintLab() {
         onTouchStart={() => { autoScroll.current = false }}
         onTouchEnd={() => { setTimeout(() => { autoScroll.current = true }, 2000) }}
         className="flex gap-5 overflow-x-auto pl-6 md:pl-10 pr-6 md:pr-10 pb-4
-          scrollbar-none cursor-grab active:cursor-grabbing select-none"
+          cursor-grab active:cursor-grabbing select-none"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
@@ -250,7 +278,6 @@ export default function TintLab() {
           WebkitOverflowScrolling: 'touch',
         }}
       >
-        {/* Render twice for seamless loop feel */}
         {[...SHADES, ...SHADES].map((shade, i) => (
           <ShadeCard key={`${shade.id}-${i}`} shade={shade} />
         ))}

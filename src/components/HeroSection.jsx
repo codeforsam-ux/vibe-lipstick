@@ -36,8 +36,8 @@ export default function HeroSection() {
       const hue = 300 + progress * 60
       const grad = ctx.createRadialGradient(640, 360, 0, 640, 360, 900)
       grad.addColorStop(0, `hsl(${hue}, 100%, 40%)`)
-      grad.addColorStop(0.5, '#1a0010')
-      grad.addColorStop(1, '#0A0A0A')
+      grad.addColorStop(0.5, '#1a000f')
+      grad.addColorStop(1, '#0D0A14')
       ctx.fillStyle = grad
       ctx.fillRect(0, 0, 1280, 720)
 
@@ -117,7 +117,7 @@ export default function HeroSection() {
       // Static gradient for reduced-motion users
       const grad = ctx.createLinearGradient(0, 0, 1280, 720)
       grad.addColorStop(0, '#2a0018')
-      grad.addColorStop(1, '#0A0A0A')
+      grad.addColorStop(1, '#0D0A14')
       ctx.fillStyle = grad
       ctx.fillRect(0, 0, 1280, 720)
     }
@@ -156,7 +156,7 @@ export default function HeroSection() {
         />
 
         {/* Gradient overlay for text legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-onyx/80 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0D0A14]/80 via-transparent to-transparent pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-r from-onyx/40 via-transparent to-transparent pointer-events-none" />
 
         {/* Headline overlay */}
