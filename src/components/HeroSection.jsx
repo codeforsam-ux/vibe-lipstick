@@ -144,8 +144,10 @@ export default function HeroSection() {
       id="hero"
       ref={heroWrapRef}
       aria-label="Hero: scroll to explore VIBE"
-      className="relative min-h-screen flex items-center justify-center bg-onyx overflow-hidden"
+      className="relative min-h-screen flex flex-col bg-onyx overflow-hidden"
     >
+      {/* Flex-1 wrapper centres the canvas vertically */}
+      <div className="flex-1 flex items-center justify-center">
       {/* 1280×720 scroll-animation container */}
       <div className="relative w-full max-w-[1280px] mx-auto aspect-[1280/720] overflow-hidden">
         <canvas
@@ -221,9 +223,10 @@ export default function HeroSection() {
           </span>
         </div>
       </div>
+      </div>{/* end flex-1 centering wrapper */}
 
-      {/* Marquee ticker below hero */}
-      <div className="absolute bottom-0 left-0 right-0 overflow-hidden bg-[#FF0099] py-2.5">
+      {/* Marquee ticker — 30px gap above the bar */}
+      <div className="mt-[30px] overflow-hidden bg-[#FF0099] py-2.5">
         <div className="marquee-track select-none" aria-hidden="true">
           {Array(8).fill(null).map((_, i) => (
             <span key={i} className="font-display font-extrabold text-sm tracking-widest text-onyx mx-8">
