@@ -3,3 +3,7 @@ dist
 .env
 .env.local
 .DS_Store
+.vercel
+
+# Frame sequence — too large for git; deploy via prebuilt
+public/frames/

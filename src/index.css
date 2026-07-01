@@ -90,6 +90,14 @@ section[id] {
   scroll-margin-top: 80px;
 }
 
+/* Scroll hint line animation */
+@keyframes scrollHint {
+  0%   { opacity: 0; transform: scaleY(0); transform-origin: top; }
+  40%  { opacity: 1; transform: scaleY(1); transform-origin: top; }
+  80%  { opacity: 0; transform: scaleY(1); transform-origin: bottom; }
+  100% { opacity: 0; }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
