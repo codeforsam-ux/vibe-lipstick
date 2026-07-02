@@ -50,7 +50,9 @@ export default function HeroSection() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.clearRect(0, 0, cssWidth, cssHeight)
 
-    const scale = Math.min(cssWidth / img.naturalWidth, cssHeight / img.naturalHeight)
+    // Cover-fit: always fill the pinned section edge-to-edge (no pillarboxing),
+    // cropping evenly from the center on whichever axis overflows.
+    const scale = Math.max(cssWidth / img.naturalWidth, cssHeight / img.naturalHeight)
     const drawW = img.naturalWidth * scale
     const drawH = img.naturalHeight * scale
     ctx.drawImage(img, (cssWidth - drawW) / 2, (cssHeight - drawH) / 2, drawW, drawH)
@@ -66,8 +68,10 @@ export default function HeroSection() {
     const loadOne = (i) => new Promise((resolve) => {
       const img = new Image()
       img.decoding = 'async'
-      img.onload = async () => {
-        try { await img.decode() } catch (_) { /* decode best-effort */ }
+      img.onload = () => {
+        // decode() is a best-effort jank-avoidance hint — it can hang
+        // indefinitely in some environments, so it must never block paint.
+        img.decode().catch(() => {})
         if (!cancelled && i === 1) {
           drawFrame(1)
           setFirstPainted(true)
