@@ -4,6 +4,8 @@ dist
 .env.local
 .DS_Store
 .vercel
+.claude
 
-# Frame sequence — too large for git; deploy via prebuilt
-public/frames/
+# Raw source frames — not served, only public/frames/ (JPG, ~6.5MB) ships
+video frames jpg file/
+video frames png file.zip

@@ -1,186 +1,120 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-/* ─── Config ─────────────────────────────────────── */
-const TOTAL_FRAMES   = 270
-const SCROLL_PX      = 5400        // total pin scroll distance (~20px per frame)
-const EAGER_COUNT    = 50          // load these first before background batch
-const BATCH_SIZE     = 15          // frames per background batch
-const BATCH_DELAY_MS = 60          // ms between background batches
-const SRC_W          = 1280
-const SRC_H          = 720
+const FRAME_COUNT = 270
+const PX_PER_FRAME = 18
+const SCROLL_PX = FRAME_COUNT * PX_PER_FRAME
+const PRELOAD_CONCURRENCY = 12
+const framePath = (i) => `/frames/frame-${String(i).padStart(3, '0')}.jpg`
 
-const frameSrc = (i) =>
-  `/frames/ezgif-frame-${String(i + 1).padStart(3, '0')}.png`
-
-/* ─── Component ─────────────────────────────────── */
 export default function HeroSection() {
   const prefersReduced = useReducedMotion()
-
   const sectionRef  = useRef(null)
   const canvasRef   = useRef(null)
-  const ctxRef      = useRef(null)
-  const cssWRef     = useRef(0)
-  const cssHRef     = useRef(0)
-
-  /* HTMLImageElement array — universally supported, browser-cached */
-  const images      = useRef(new Array(TOTAL_FRAMES).fill(null))
-  const loadedSet   = useRef(new Set())
-  const curIdx      = useRef(0)
-  const rafId       = useRef(null)
   const stRef       = useRef(null)
+  const imagesRef   = useRef([])
+  const frameRef    = useRef(1)
+  const [firstPainted, setFirstPainted] = useState(false)
 
-  /* ─── Draw one frame ─── */
-  const draw = useCallback((idx) => {
-    const ctx = ctxRef.current
-    const img = images.current[idx]
-    if (!ctx || !img || !img.complete || img.naturalWidth === 0) return
-
-    const cw = cssWRef.current
-    const ch = cssHRef.current
-    if (cw === 0 || ch === 0) return
-
-    // contain: maintain 1280×720 aspect, letterbox with brand bg
-    const scale = Math.min(cw / SRC_W, ch / SRC_H)
-    const dw    = SRC_W * scale
-    const dh    = SRC_H * scale
-    const dx    = (cw - dw) / 2
-    const dy    = (ch - dh) / 2
-
-    ctx.fillStyle = '#0D0A14'
-    ctx.fillRect(0, 0, cw, ch)
-    ctx.drawImage(img, dx, dy, dw, dh)
-
-    curIdx.current = idx
-  }, [])
-
-  /* ─── Schedule a draw on the next animation frame ─── */
-  const schedDraw = useCallback((idx) => {
-    if (rafId.current !== null) cancelAnimationFrame(rafId.current)
-    rafId.current = requestAnimationFrame(() => {
-      rafId.current = null
-      draw(idx)
-    })
-  }, [draw])
-
-  /* ─── Setup & resize canvas ─── */
-  const initCanvas = useCallback(() => {
+  const drawFrame = useCallback((index) => {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const dpr = window.devicePixelRatio || 1
-    const w   = Math.floor(canvas.getBoundingClientRect().width)
-    const h   = Math.floor(canvas.getBoundingClientRect().height)
-
-    if (w === 0 || h === 0) return
-
-    canvas.width  = Math.round(w * dpr)
-    canvas.height = Math.round(h * dpr)
-    cssWRef.current = w
-    cssHRef.current = h
-
-    const ctx = canvas.getContext('2d', { alpha: false })
-    ctx.scale(dpr, dpr)
-    ctx.fillStyle = '#0D0A14'
-    ctx.fillRect(0, 0, w, h)
-    ctxRef.current = ctx
-
-    // Re-draw the current frame after resize
-    draw(curIdx.current)
-  }, [draw])
-
-  /* ─── Load a single frame via HTMLImageElement ─── */
-  const loadFrame = useCallback((idx) => {
-    if (images.current[idx] || loadedSet.current.has(idx)) return
-    loadedSet.current.add(idx)
-
-    const img = new Image()
-
-    img.onload = () => {
-      images.current[idx] = img
-      // Render the very first frame as soon as it arrives
-      if (idx === 0) schedDraw(0)
+    // Fall back to the nearest already-loaded frame so a slow network
+    // never leaves the canvas blank mid-scrub.
+    let img = imagesRef.current[index - 1]
+    if (!img || !img.complete || img.naturalWidth === 0) {
+      for (let radius = 1; radius < FRAME_COUNT; radius++) {
+        const back = imagesRef.current[index - 1 - radius]
+        const fwd  = imagesRef.current[index - 1 + radius]
+        if (back && back.complete && back.naturalWidth) { img = back; break }
+        if (fwd && fwd.complete && fwd.naturalWidth) { img = fwd; break }
+      }
     }
+    if (!img) return
 
-    img.onerror = () => {
-      loadedSet.current.delete(idx) // allow retry
+    const ctx = canvas.getContext('2d')
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    const cssWidth  = canvas.clientWidth
+    const cssHeight = canvas.clientHeight
+    const bufferW = Math.round(cssWidth * dpr)
+    const bufferH = Math.round(cssHeight * dpr)
+    if (canvas.width !== bufferW || canvas.height !== bufferH) {
+      canvas.width  = bufferW
+      canvas.height = bufferH
     }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    ctx.clearRect(0, 0, cssWidth, cssHeight)
 
-    // Decode hint: async decode so it doesn't block the main thread
-    img.decoding = 'async'
-    img.src = frameSrc(idx)
-  }, [schedDraw])
+    const scale = Math.min(cssWidth / img.naturalWidth, cssHeight / img.naturalHeight)
+    const drawW = img.naturalWidth * scale
+    const drawH = img.naturalHeight * scale
+    ctx.drawImage(img, (cssWidth - drawW) / 2, (cssHeight - drawH) / 2, drawW, drawH)
+  }, [])
 
-  /* ─── Progressive loading ─── */
+  // Preload every frame, painting frame 1 the instant it's ready and
+  // streaming the rest in behind it with bounded concurrency.
   useEffect(() => {
-    // Phase 1 — eager: first EAGER_COUNT frames in parallel
-    for (let i = 0; i < Math.min(EAGER_COUNT, TOTAL_FRAMES); i++) {
-      loadFrame(i)
-    }
+    let cancelled = false
+    const images = new Array(FRAME_COUNT)
+    imagesRef.current = images
 
-    // Phase 2 — background: remaining frames in small batches
-    let batchStart = EAGER_COUNT
-    const runBatch = () => {
-      if (batchStart >= TOTAL_FRAMES) return
-      const end = Math.min(batchStart + BATCH_SIZE, TOTAL_FRAMES)
-      for (let i = batchStart; i < end; i++) loadFrame(i)
-      batchStart = end
-      setTimeout(runBatch, BATCH_DELAY_MS)
-    }
-    const bgTimer = setTimeout(runBatch, 300)
-    return () => clearTimeout(bgTimer)
-  }, [loadFrame])
-
-  /* ─── Canvas init + ResizeObserver ─── */
-  useEffect(() => {
-    // Small rAF delay lets the browser finish laying out the section
-    const raf = requestAnimationFrame(() => {
-      initCanvas()
+    const loadOne = (i) => new Promise((resolve) => {
+      const img = new Image()
+      img.decoding = 'async'
+      img.onload = async () => {
+        try { await img.decode() } catch (_) { /* decode best-effort */ }
+        if (!cancelled && i === 1) {
+          drawFrame(1)
+          setFirstPainted(true)
+        } else if (!cancelled && i === frameRef.current) {
+          drawFrame(i)
+        }
+        resolve()
+      }
+      img.onerror = () => resolve()
+      images[i - 1] = img
+      img.src = framePath(i)
     })
 
-    const ro = new ResizeObserver(() => {
-      // Reset context scale by re-initialising
-      ctxRef.current = null
-      initCanvas()
-    })
-    if (canvasRef.current) ro.observe(canvasRef.current)
-
-    window.addEventListener('resize', initCanvas, { passive: true })
-
-    return () => {
-      cancelAnimationFrame(raf)
-      ro.disconnect()
-      window.removeEventListener('resize', initCanvas)
-      if (rafId.current !== null) cancelAnimationFrame(rafId.current)
+    async function run() {
+      await loadOne(1)
+      const rest = []
+      for (let i = 2; i <= FRAME_COUNT; i++) rest.push(i)
+      let cursor = 0
+      const workers = new Array(PRELOAD_CONCURRENCY).fill(0).map(async () => {
+        while (cursor < rest.length && !cancelled) {
+          await loadOne(rest[cursor++])
+        }
+      })
+      await Promise.all(workers)
+      if (!cancelled) ScrollTrigger.refresh()
     }
-  }, [initCanvas])
+    run()
 
-  /* ─── GSAP ScrollTrigger ─── */
+    return () => { cancelled = true }
+  }, [drawFrame])
+
+  // Pin the section and scrub the frame index in lockstep with scroll.
   useEffect(() => {
-    if (prefersReduced) {
-      schedDraw(0)
-      return
-    }
+    if (prefersReduced) return
 
-    // Small delay ensures the section is in the DOM and sized
     const t = setTimeout(() => {
       stRef.current = ScrollTrigger.create({
         trigger : sectionRef.current,
         start   : 'top top',
         end     : `+=${SCROLL_PX}`,
         pin     : true,
-        scrub   : 0.2,
+        scrub   : true,
         onUpdate: (self) => {
-          const target = Math.min(
-            Math.round(self.progress * (TOTAL_FRAMES - 1)),
-            TOTAL_FRAMES - 1
-          )
-          if (target !== curIdx.current || !ctxRef.current) {
-            schedDraw(target)
+          const frame = 1 + Math.round(self.progress * (FRAME_COUNT - 1))
+          if (frame !== frameRef.current) {
+            frameRef.current = frame
+            drawFrame(frame)
           }
         },
       })
@@ -193,7 +127,17 @@ export default function HeroSection() {
         stRef.current = null
       }
     }
-  }, [prefersReduced, schedDraw])
+  }, [prefersReduced, drawFrame])
+
+  // Keep the canvas buffer and current frame crisp across viewport/DPR changes.
+  useEffect(() => {
+    const handleResize = () => {
+      drawFrame(frameRef.current)
+      ScrollTrigger.refresh()
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [drawFrame])
 
   return (
     <>
@@ -213,13 +157,14 @@ export default function HeroSection() {
         <canvas
           ref={canvasRef}
           style={{
-            position      : 'absolute',
-            top           : 0,
-            left          : 0,
-            width         : '100%',
-            height        : '100%',
-            display       : 'block',
-            imageRendering: 'crisp-edges',
+            position  : 'absolute',
+            top       : 0,
+            left      : 0,
+            width     : '100%',
+            height    : '100%',
+            display   : 'block',
+            opacity   : firstPainted ? 1 : 0,
+            transition: 'opacity 0.4s ease',
           }}
           aria-hidden="true"
         />
@@ -227,16 +172,16 @@ export default function HeroSection() {
         {/* Scroll hint — bottom-centre */}
         <div
           style={{
-            position      : 'absolute',
-            bottom        : '2rem',
-            left          : '50%',
-            transform     : 'translateX(-50%)',
-            zIndex        : 10,
-            display       : 'flex',
-            flexDirection : 'column',
-            alignItems    : 'center',
-            gap           : '6px',
-            pointerEvents : 'none',
+            position     : 'absolute',
+            bottom       : '2rem',
+            left         : '50%',
+            transform    : 'translateX(-50%)',
+            zIndex       : 10,
+            display      : 'flex',
+            flexDirection: 'column',
+            alignItems   : 'center',
+            gap          : '6px',
+            pointerEvents: 'none',
           }}
         >
           <span style={{
